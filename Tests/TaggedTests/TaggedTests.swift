@@ -70,16 +70,18 @@ final class TaggedTests: XCTestCase {
     )
   }
 
-  func testCodingKeyRepresentable() {
-    if #available(macOS 12.3, iOS 15.4, watchOS 8.5, tvOS 15.4, *) {
-      enum Key {}
-      let xs: [Tagged<Key, String>: String] = [Tagged("Hello"): "World"]
-      XCTAssertEqual(
-        String(decoding: try JSONEncoder().encode(xs), as: UTF8.self),
-        #"{"Hello":"World"}"#
-      )
+  #if swift(>=5.6)
+    func testCodingKeyRepresentable() {
+      if #available(macOS 12.3, iOS 15.4, watchOS 8.5, tvOS 15.4, *) {
+        enum Key {}
+        let xs: [Tagged<Key, String>: String] = [Tagged("Hello"): "World"]
+        XCTAssertEqual(
+          String(decoding: try JSONEncoder().encode(xs), as: UTF8.self),
+          #"{"Hello":"World"}"#
+        )
+      }
     }
-  }
+  #endif
 
   func testEquatable() {
     XCTAssertEqual(Tagged<Tag, Int>(rawValue: 1), Tagged<Tag, Int>(rawValue: 1))
@@ -90,23 +92,23 @@ final class TaggedTests: XCTestCase {
   }
   
   #if canImport(Foundation)
-    func testLocalizedError() {
-      let taggedError: Error = Tagged<Tag, Error>(rawValue: Unit())
-      XCTAssertEqual(taggedError.localizedDescription, Unit().localizedDescription)
-      
-      struct DummyLocalizedError: LocalizedError {
-        var errorDescription: String? { return "errorDescription" }
-        var failureReason: String? { return "failureReason" }
-        var helpAnchor: String? { return "helpAnchor" }
-        var recoverySuggestion: String? { return "recoverySuggestion" }
-      }
-      let taggedLocalizedError: LocalizedError = Tagged<Tag, DummyLocalizedError>(rawValue: DummyLocalizedError())
-      XCTAssertEqual(taggedLocalizedError.localizedDescription, DummyLocalizedError().localizedDescription)
-      XCTAssertEqual(taggedLocalizedError.errorDescription, DummyLocalizedError().errorDescription)
-      XCTAssertEqual(taggedLocalizedError.failureReason, DummyLocalizedError().failureReason)
-      XCTAssertEqual(taggedLocalizedError.helpAnchor, DummyLocalizedError().helpAnchor)
-      XCTAssertEqual(taggedLocalizedError.recoverySuggestion, DummyLocalizedError().recoverySuggestion)
+  func testLocalizedError() {
+    let taggedError: Error = Tagged<Tag, Error>(rawValue: Unit())
+    XCTAssertEqual(taggedError.localizedDescription, Unit().localizedDescription)
+    
+    struct DummyLocalizedError: LocalizedError {
+      var errorDescription: String? { return "errorDescription" }
+      var failureReason: String? { return "failureReason" }
+      var helpAnchor: String? { return "helpAnchor" }
+      var recoverySuggestion: String? { return "recoverySuggestion" }
     }
+    let taggedLocalizedError: LocalizedError = Tagged<Tag, DummyLocalizedError>(rawValue: DummyLocalizedError())
+    XCTAssertEqual(taggedLocalizedError.localizedDescription, DummyLocalizedError().localizedDescription)
+    XCTAssertEqual(taggedLocalizedError.errorDescription, DummyLocalizedError().errorDescription)
+    XCTAssertEqual(taggedLocalizedError.failureReason, DummyLocalizedError().failureReason)
+    XCTAssertEqual(taggedLocalizedError.helpAnchor, DummyLocalizedError().helpAnchor)
+    XCTAssertEqual(taggedLocalizedError.recoverySuggestion, DummyLocalizedError().recoverySuggestion)
+  }
   #endif
 
   func testExpressibleByBooleanLiteral() {
